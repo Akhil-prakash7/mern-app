@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import userRouter from './routes/userRoute.js';
 import authRouter from './routes/authRoute.js'
 import { errorHandler } from './midlewares/errorHandler.js';
+
 dotenv.config()
 mongoose.connect(process.env.MONGO_URI).then(()=>{
     console.log('database connected')
