@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link,useNavigate } from 'react-router-dom';
 import { useDispatch ,useSelector} from 'react-redux';
 import { signinStart,signinSuccess,signinFailure } from '../redux/user/userSlice';
-
+import OAuth from '../components/OAuth';
 const SignIn = () => {
   const [formData, setFormData] = useState({
     username: '',
@@ -85,12 +85,14 @@ const SignIn = () => {
       >
         {loading ? 'Loading...' : 'Sign In'}
       </button>
+      <OAuth />
     </form>
     <div className='flex mt-5'>
       <p>Dont have an Account?</p>
       <Link to='/sign-up'>
         <span className='text-blue-700 ml-2'>SignUp</span>
       </Link>
+      
     </div>
     {error && <p className='text-red-500'>{error}</p>}
   </div>
