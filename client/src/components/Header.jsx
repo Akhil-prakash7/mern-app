@@ -29,7 +29,7 @@ const Header = () => {
             
             <Link to='/profile'>
             {currentUser?
-            (<img className='rounded-full w-7 h-7 object-cover' src={currentUser.avatar} alt="profile" />)
+            (<img className='rounded-full w-7 h-7 object-cover' src={currentUser.avatar||FormData?.avatar} alt="profile" />)
             :
             <Link to='/sign-in'>
             <p className='hover:text-blue-500'>Signin</p>

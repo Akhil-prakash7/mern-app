@@ -1,17 +1,20 @@
 import React,{useEffect, useRef, useState} from 'react'
 import {getStorage, ref, uploadBytesResumable,getDownloadURL, uploadBytes } from 'firebase/storage'
-import { useSelector } from 'react-redux'
+import { useSelector,useDispatch } from 'react-redux'
 import { app } from '../firebase'
+import { updateUserStart,updateUserSuccess,updateUserFailure } from '../redux/user/userSlice'
 
 
 const Profile = () => {
     const [fileUploadError, setFileUploadError] = useState(false);
     const [filePerc, setFilePerc] = useState(0);
     const [formData, setFormData] = useState({});
-    const {currentUser} = useSelector(state=>state.user)
+    const {currentUser,loading,error} = useSelector(state=>state.user)
     const imgRef = useRef(null)
     const [file,setFile] = useState(undefined)
+    const dispatch = useDispatch()
     console.log(file)
+    console.log(formData);
     useEffect(()=>{
         handleFileUpload(file)
     },[file]);
@@ -52,14 +55,49 @@ const Profile = () => {
             }
         );
     };
+    const handleChange = (e)=>{
+    setFormData({...formData,[e.target.id]:e.target.value})
+    }
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            dispatch(updateUserStart());
+    
+            const res = await fetch(`/api/user/update/${currentUser._id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    
+                },
+                body: JSON.stringify(formData),
+            });
+    
+            const data = await res.json();
+    
+            if (data.success === false) {
+                dispatch(updateUserFailure(data.message));
+                return;
+            }
+    
+            
+            dispatch(updateUserSuccess(data));
+    
+            // If the image URL has changed, update it in the UI
+            if (formData.avatar !== currentUser.avatar) {
+                imgRef.current.src = formData.avatar;
+            }
+        } catch (error) {
+            dispatch(updateUserFailure(error.message));
+        }
+    };
     
       
   return (
     <div className='max-w-lg mx-auto'>
         <h1 className='text-3xl font-semibold text-center my-7'>Profile</h1>
-        <form className='flex flex-col gap-4'>
+        <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
             <input onChange={(e)=>setFile(e.target.files[0])} type="file"  ref={imgRef} hidden accept='image/*'/>
-            <img onClick={()=>imgRef.current.click()} className='rounded-full object-cover h-24 w-24 self-center' src={formData.avatar || currentUser.avatar} alt="" />
+            <img onClick={()=>imgRef.current.click()} className='rounded-full object-cover h-24 w-24 self-center' src={formData?.avatar || currentUser?.avatar} alt="" />
             <p className='text-sm self-center'>
                 {fileUploadError ?
                 (<span className='text-red-500'>Error image Upload</span>) :
@@ -73,10 +111,10 @@ const Profile = () => {
                 
                 }
             </p>
-            <input type="text" placeholder='username'className='p-3 rounded-lg'id='username'/>
-            <input type="email" placeholder='email'className='p-3 rounded-lg'id='email'/>
-            <input type="password" placeholder='password'className='p-3 rounded-lg'id='password'/>
-            <button className='bg-green-300 rounded-lg p-3 hover:bg-green-700'>Update</button>
+            <input type="text" placeholder='username'className='p-3 rounded-lg'id='username'defaultValue={currentUser.username} onChange={handleChange}/>
+            <input type="email" placeholder='email'className='p-3 rounded-lg'id='email' defaultValue={currentUser.email}onChange={handleChange}/>
+            <input type="password" placeholder='password'className='p-3 rounded-lg'id='password'onChange={handleChange}/>
+            <button disabled={loading} className='bg-green-300 rounded-lg p-3 hover:bg-green-700'>{loading?"Loading.." :'Update'}</button>
         </form>
         <div className='flex justify-between mt-5'>
             <span className='text-red-700 font-semibold'>Delete Account</span>
