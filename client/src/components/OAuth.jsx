@@ -29,6 +29,7 @@ const oAuth = () => {
             navigate('/')
             
         } catch (error) {
+            
             console.log('could not continue with google',error)
         }
     }
